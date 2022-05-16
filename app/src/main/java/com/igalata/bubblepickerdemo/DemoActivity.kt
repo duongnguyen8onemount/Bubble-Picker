@@ -1,6 +1,7 @@
 package com.igalata.bubblepickerdemo
 
 import android.content.res.TypedArray
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
@@ -71,6 +72,8 @@ class DemoActivity : AppCompatActivity() {
                         this@DemoActivity,
                         images.getResourceId(position, 0)
                     )
+                    borderWidth = 8f
+                    borderColor = Color.parseColor("#41EB91")
                 }
             }
         }

@@ -19,4 +19,6 @@ data class PickerItem @JvmOverloads constructor(var title: String? = null,
                                                 var textSize: Float = 40f,
                                                 var backgroundImage: Drawable? = null,
                                                 var isSelected: Boolean = false,
+                                                var borderWidth: Float = 2f,
+                                                @ColorInt var borderColor: Int? = null,
                                                 var customData: Any? = null)

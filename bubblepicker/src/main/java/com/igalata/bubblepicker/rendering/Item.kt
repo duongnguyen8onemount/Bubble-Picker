@@ -2,6 +2,7 @@ package com.igalata.bubblepicker.rendering
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Rect
@@ -101,14 +102,13 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
         val canvas = Canvas(bitmap)
 
         //if (isSelected) drawImage(canvas)
-        drawImage(canvas)
+        drawImage(canvas, isSelected)
         //drawBackground(canvas, true)
         drawIcon(canvas)
         //drawText(canvas)
 
         return bitmap
     }
-
     private fun drawBackground(canvas: Canvas, withImage: Boolean) {
         val bgPaint = Paint()
         bgPaint.style = Paint.Style.FILL
@@ -187,7 +187,7 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
         }
     }
 
-    private fun drawImage(canvas: Canvas) {
+    private fun drawImage(canvas: Canvas, isSelected: Boolean) {
         pickerItem.backgroundImage?.let {
             val height = (it as BitmapDrawable).bitmap.height.toFloat()
             val width = it.bitmap.width.toFloat()
@@ -196,6 +196,15 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
             val bitmapWidth = if (height < width) bitmapSize * ratio else bitmapSize
             it.bounds = Rect(0, 0, bitmapWidth.toInt(), bitmapHeight.toInt())
             it.draw(canvas)
+
+            if (isSelected) {
+                val extra = 1.0f
+                val borderPaint = Paint()
+                borderPaint.style = Paint.Style.STROKE
+                borderPaint.strokeWidth = pickerItem.borderWidth + extra
+                borderPaint.color = pickerItem.borderColor ?: Color.TRANSPARENT
+                canvas.drawCircle(bitmapSize / 2f, bitmapSize / 2f, bitmapSize / 2f - pickerItem.borderWidth + 2 * extra, borderPaint)
+            }
         }
     }
 
