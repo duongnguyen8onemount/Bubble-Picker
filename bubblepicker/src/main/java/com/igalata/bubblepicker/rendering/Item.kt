@@ -1,8 +1,22 @@
 package com.igalata.bubblepicker.rendering
 
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
-import android.opengl.GLES20.*
+import android.opengl.GLES20.GL_TEXTURE
+import android.opengl.GLES20.GL_TEXTURE_2D
+import android.opengl.GLES20.GL_TRIANGLE_STRIP
+import android.opengl.GLES20.glActiveTexture
+import android.opengl.GLES20.glBindTexture
+import android.opengl.GLES20.glDrawArrays
+import android.opengl.GLES20.glGenTextures
+import android.opengl.GLES20.glGetUniformLocation
+import android.opengl.GLES20.glUniform1i
+import android.opengl.GLES20.glUniformMatrix4fv
 import android.opengl.Matrix
 import android.text.Layout
 import android.text.StaticLayout
@@ -45,11 +59,13 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
         get() {
             return pickerItem.gradient?.let {
                 val horizontal = it.direction == BubbleGradient.HORIZONTAL
-                LinearGradient(if (horizontal) 0f else bitmapSize / 2f,
-                        if (horizontal) bitmapSize / 2f else 0f,
-                        if (horizontal) bitmapSize else bitmapSize / 2f,
-                        if (horizontal) bitmapSize / 2f else bitmapSize,
-                        it.startColor, it.endColor, Shader.TileMode.CLAMP)
+                LinearGradient(
+                    if (horizontal) 0f else bitmapSize / 2f,
+                    if (horizontal) bitmapSize / 2f else 0f,
+                    if (horizontal) bitmapSize else bitmapSize / 2f,
+                    if (horizontal) bitmapSize / 2f else bitmapSize,
+                    it.startColor, it.endColor, Shader.TileMode.CLAMP
+                )
             }
         }
 
@@ -57,8 +73,17 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
         glActiveTexture(GL_TEXTURE)
         glBindTexture(GL_TEXTURE_2D, currentTexture)
         glUniform1i(glGetUniformLocation(programId, BubbleShader.U_TEXT), 0)
-        glUniform1i(glGetUniformLocation(programId, BubbleShader.U_VISIBILITY), if (isVisible) 1 else -1)
-        glUniformMatrix4fv(glGetUniformLocation(programId, U_MATRIX), 1, false, calculateMatrix(scaleX, scaleY), 0)
+        glUniform1i(
+            glGetUniformLocation(programId, BubbleShader.U_VISIBILITY),
+            if (isVisible) 1 else -1
+        )
+        glUniformMatrix4fv(
+            glGetUniformLocation(programId, U_MATRIX),
+            1,
+            false,
+            calculateMatrix(scaleX, scaleY),
+            0
+        )
         glDrawArrays(GL_TRIANGLE_STRIP, index * 4, 4)
     }
 
@@ -68,16 +93,18 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
     }
 
     private fun createBitmap(isSelected: Boolean): Bitmap {
-        var bitmap = Bitmap.createBitmap(bitmapSize.toInt(), bitmapSize.toInt(), Bitmap.Config.ARGB_4444)
+        var bitmap =
+            Bitmap.createBitmap(bitmapSize.toInt(), bitmapSize.toInt(), Bitmap.Config.ARGB_4444)
         val bitmapConfig: Bitmap.Config = bitmap.config ?: Bitmap.Config.ARGB_8888
         bitmap = bitmap.copy(bitmapConfig, true)
 
         val canvas = Canvas(bitmap)
 
-        if (isSelected) drawImage(canvas)
-        drawBackground(canvas, isSelected)
+        //if (isSelected) drawImage(canvas)
+        drawImage(canvas)
+        //drawBackground(canvas, true)
         drawIcon(canvas)
-        drawText(canvas)
+        //drawText(canvas)
 
         return bitmap
     }
@@ -110,19 +137,27 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
         }
 
         if (pickerItem.icon == null) {
-            canvas.translate((bitmapSize - textLayout.width) / 2f, (bitmapSize - textLayout.height) / 2f)
+            canvas.translate(
+                (bitmapSize - textLayout.width) / 2f,
+                (bitmapSize - textLayout.height) / 2f
+            )
         } else if (pickerItem.iconOnTop) {
             canvas.translate((bitmapSize - textLayout.width) / 2f, bitmapSize / 2f)
         } else {
-            canvas.translate((bitmapSize - textLayout.width) / 2f, bitmapSize / 2 - textLayout.height)
+            canvas.translate(
+                (bitmapSize - textLayout.width) / 2f,
+                bitmapSize / 2 - textLayout.height
+            )
         }
-
+        canvas.translate(0f, 0f)
         textLayout.draw(canvas)
     }
 
     private fun placeText(paint: TextPaint): StaticLayout {
-        return StaticLayout(pickerItem.title, paint, (bitmapSize * 0.9).toInt(),
-                Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false)
+        return StaticLayout(
+            pickerItem.title, paint, (bitmapSize * 0.9).toInt(),
+            Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false
+        )
     }
 
     private fun drawIcon(canvas: Canvas) {
@@ -134,11 +169,18 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
             val right = (bitmapSize / 2 + width / 2).toInt()
 
             if (pickerItem.title == null) {
-                it.bounds = Rect(left, (bitmapSize / 2 - height / 2).toInt(), right, (bitmapSize / 2 + height / 2).toInt())
+                it.bounds = Rect(
+                    left,
+                    (bitmapSize / 2 - height / 2).toInt(),
+                    right,
+                    (bitmapSize / 2 + height / 2).toInt()
+                )
             } else if (pickerItem.iconOnTop) {
-                it.bounds = Rect(left, (bitmapSize / 2 - height).toInt(), right, (bitmapSize / 2).toInt())
+                it.bounds =
+                    Rect(left, (bitmapSize / 2 - height).toInt(), right, (bitmapSize / 2).toInt())
             } else {
-                it.bounds = Rect(left, (bitmapSize / 2).toInt(), right, (bitmapSize / 2 + height).toInt())
+                it.bounds =
+                    Rect(left, (bitmapSize / 2).toInt(), right, (bitmapSize / 2 + height).toInt())
             }
 
             it.draw(canvas)
@@ -165,8 +207,10 @@ data class Item(val pickerItem: PickerItem, val circleBody: CircleBody) {
 
     private fun calculateMatrix(scaleX: Float, scaleY: Float) = FloatArray(16).apply {
         Matrix.setIdentityM(this, 0)
-        Matrix.translateM(this, 0, currentPosition.x * scaleX - initialPosition.x,
-                currentPosition.y * scaleY - initialPosition.y, 0f)
+        Matrix.translateM(
+            this, 0, currentPosition.x * scaleX - initialPosition.x,
+            currentPosition.y * scaleY - initialPosition.y, 0f
+        )
     }
 
 }

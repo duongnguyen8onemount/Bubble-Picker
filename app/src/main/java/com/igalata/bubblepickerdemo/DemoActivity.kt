@@ -1,5 +1,6 @@
 package com.igalata.bubblepickerdemo
 
+import android.content.res.TypedArray
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
@@ -10,7 +11,11 @@ import com.igalata.bubblepicker.BubblePickerListener
 import com.igalata.bubblepicker.adapter.BubblePickerAdapter
 import com.igalata.bubblepicker.model.BubbleGradient
 import com.igalata.bubblepicker.model.PickerItem
-import kotlinx.android.synthetic.main.activity_demo.*
+import kotlinx.android.synthetic.main.activity_demo.addButton
+import kotlinx.android.synthetic.main.activity_demo.hintTextView
+import kotlinx.android.synthetic.main.activity_demo.picker
+import kotlinx.android.synthetic.main.activity_demo.subtitleTextView
+import kotlinx.android.synthetic.main.activity_demo.titleTextView
 import kotlin.random.Random
 
 
@@ -32,11 +37,12 @@ class DemoActivity : AppCompatActivity() {
 
     val removedTitles = mutableListOf<String>()
     var items = mutableListOf<String>()
+    lateinit var images: TypedArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_demo)
-
+        images = resources.obtainTypedArray(R.array.images)
         titleTextView.typeface = mediumTypeface
         subtitleTextView.typeface = boldTypeface
         hintTextView.typeface = regularTypeface
@@ -56,11 +62,15 @@ class DemoActivity : AppCompatActivity() {
                     title = items[position]
                     typeface = mediumTypeface
                     gradient = BubbleGradient(
-                            getRandomColor(),
-                            getRandomColor(),
-                            BubbleGradient.VERTICAL
+                        getRandomColor(),
+                        getRandomColor(),
+                        BubbleGradient.VERTICAL
                     )
                     textColor = ContextCompat.getColor(this@DemoActivity, android.R.color.white)
+                    backgroundImage = ContextCompat.getDrawable(
+                        this@DemoActivity,
+                        images.getResourceId(position, 0)
+                    )
                 }
             }
         }
@@ -92,10 +102,6 @@ class DemoActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         picker.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     fun getRandomColor(): Int {
